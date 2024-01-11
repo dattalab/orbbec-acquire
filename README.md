@@ -59,57 +59,65 @@ conda activate orbbec-acquire
 pip install "pybind11[global]"
 ```
 
-## Step 6: Install `pyorbbecsdk`.
-Navigate to the `pyorbbecsdk` directory by running:
+## Step 6: Install `orbbec-acquire`.
+Navigate to the `orbbec-acquire` directory by running:
 ```bash
-cd pyorbbecsdk
-```
-Find your Python3 path by running:
-```bash
-which python3
-```
-
-Open `CMakeLists.txt` in a text editor add these two lines before `find_package(Python3 REQUIRED COMPONENTS Interpreter Development)`:
-```
-set(Python3_ROOT_DIR "/home/anaconda3/envd/orbbec-acquire/python3.11") # replace by your python3 path
-set(pybind11_DIR "${Python3_ROOT_DIR}/lib/python3.6/site-packages/pybind11/share/cmake/pybind11") # replace by your pybind11 path
-```
-
-Build and install `pyorbbecsdk` byrunning:
-```bash
-mkdir build
-cd build
-cmake -Dpybind11_DIR=`pybind11-config --cmakedir` ..
-make -j4
-make install
-```
-
-Add `pyorbbecsdk` to the `LD_LIBRARY_PATH` by running:
-```bash
-echo "export PYTHONPATH=$PYTHONPATH:$(pwd)/install/lib/" >> ~/.bashrc
-
-## Step 7: Finish installing `orbbec-acquire`
-Navigate back to the `orbbec-acquire` directory by running:
-```bash
-cd ../orbbec-acquire
+cd orbbec-acquire
 ```
 Install this package by running:
 ```bash
 pip install .
 ```
 
-Connect the camera to the acquisition computer. If the camera was previously connected, disconnect and re-connect the camera. Optionally preview with the viewer.
+# Step 7: Generate `CMakeLists.txt` for installing `pyorbbecsdk`.
 
-Once you have finished setting up the environment, you should be able to verify the installation by running:
+Navigate to the `orbbec-acquire` directory by running:
+```bash
+cd orbbec-acquire
 ```
-orbbec-acquire --version
+Run the following script to generate the `CMakeLists.txt` file:
 ```
+python ./scripts/generate_cmake.py
+```
+Copy the generated `CMakeLists.txt` file to the `pyorbbecsdk` directory mauanlly in Files or by running
+(assuming you are in the `orbbec-acquire` directory and the `pyorbbecsdk` directory is the same level as `orbbec-acquire`):
+```
+cp ./scripts/CMakeLists.txt ../pyorbbecsdk
+```
+
+Copy the `pyorbbecsdk` installation script `install_pyorbbecsdk.sh` to the `pyorbbecsdk` directory by running:
+```
+cp ./scripts/install_pyorbbecsdk.sh ../pyorbbecsdk
+```
+
+## Step 8: Install `pyorbbecsdk`.
+Navigate to the `pyorbbecsdk` directory by running (assuming you are in the `orbbec-acquire` directory):
+```bash
+cd ../pyorbbecsdk
+```
+
+Install the package by running:
+```bash
+./install_pyorbbecsdk.sh
+```
+
+## Step 9: Restart the Terminal for the changes to be effective.
+
+Connect the camera to the acquisition computer. If the camera was previously connected, disconnect and re-connect the camera. Optionally preview with the viewer or navigate to `pyorbbecsdk/examples` directory and run the example scripts to test the camera.
+
 
 # Acquiring data
+
+Activate the `orbbec-acquire` conda environment by running:
+```
+conda activate orbbec-acquire
+```
+
 Check the version of the package by running:
 ```
 orbbec-acquire --version
 ```
+
 Example acquisition command saving recording at `./data`:
 ```
 orbbec-acquire ./data --subject-name mouse1 --session-name saline --recording-length 20 
