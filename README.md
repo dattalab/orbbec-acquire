@@ -95,7 +95,6 @@ Install the package by running:
 ```bash
 bash ./install_pyorbbecsdk.sh
 # add python path to .bashrc
-echo "export PYTHONPATH=$PYTHONPATH:$(pwd)/install/lib/" >> ~/.bashrc
 ```
 
 ## Step 9: Restart the Terminal for the changes to be effective.
