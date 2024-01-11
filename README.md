@@ -32,6 +32,7 @@ git clone https://github.com/orbbec/pyorbbecsdk.git
 ```
 
 ## Step 3: Install the necessary packages and libraries
+<!-- curl ffmpeg and conda -->
 Navigate to the `orbbec-acquire` directory by running:
 ```bash
 cd orbbec-acquire
