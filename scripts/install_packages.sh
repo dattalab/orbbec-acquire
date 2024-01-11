@@ -8,6 +8,8 @@ sudo apt install curl
 # Install packages
 sudo apt install build-essential
 sudo apt install ffmpeg
+sudo apt-add-repository -y -n 'deb http://archive.ubuntu.com/ubuntu focal main'
+sudo apt-add-repository -y 'deb http://archive.ubuntu.com/ubuntu focal universe'
 sudo apt-get update
 sudo apt-get install -y libsoundio1
 
