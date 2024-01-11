@@ -39,7 +39,7 @@ cd orbbec-acquire
 ```
 Install the necessary packages by running the following script:
 ```bash 
-./scripts/install_packages.sh
+bash ./scripts/install_packages.sh
 ```
 
 ## Step 4: Restart Terminal for the changes to be effective.
@@ -70,11 +70,6 @@ pip install .
 ```
 
 # Step 7: Generate `CMakeLists.txt` for installing `pyorbbecsdk`.
-
-Navigate to the `orbbec-acquire` directory by running:
-```bash
-cd orbbec-acquire
-```
 Run the following script to generate the `CMakeLists.txt` file:
 ```
 python ./scripts/generate_cmake.py
@@ -98,7 +93,9 @@ cd ../pyorbbecsdk
 
 Install the package by running:
 ```bash
-./install_pyorbbecsdk.sh
+bash ./install_pyorbbecsdk.sh
+# add python path to .bashrc
+echo "export PYTHONPATH=$PYTHONPATH:$(pwd)/install/lib/" >> ~/.bashrc
 ```
 
 ## Step 9: Restart the Terminal for the changes to be effective.
