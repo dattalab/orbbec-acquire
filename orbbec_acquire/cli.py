@@ -32,7 +32,6 @@ def record(
     session_name,
     save_ir,
     recording_length,
-    serial_number,
     preview,
     display_time,
 ):
