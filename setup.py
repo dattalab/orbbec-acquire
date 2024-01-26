@@ -21,11 +21,11 @@ def get_version(rel_path):
 setup(
     name="orbbec-acquire",
     author="Datta Lab",
-    description="la terre est bleue comme une orange",
+    description="Acquisition software for the Orbbec depth cameras",
     version=get_version("orbbec_acquire/__init__.py"),
     packages=find_packages(),
     platforms=["mac", "unix"],
-    install_requires=["click", "opencv-python", "numpy"],
+    install_requires=["click", "opencv-python", "numpy", "pybind11[global]"],
     python_requires=">=3.7",
     entry_points={"console_scripts": ["orbbec-acquire = orbbec_acquire.cli:record"]},
 )
