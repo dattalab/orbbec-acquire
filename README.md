@@ -14,7 +14,7 @@ You can follow the [installation instruction](https://ubuntu.com/server/docs/ins
 ## Step 1: Install `git`
 ```
 sudo apt update
-sudo apt install -y git
+sudo apt install git
 ```
 
 ## Step 2: Clone (download) the `orbbec-acquire` and `pyorbbecsdk` repositories
