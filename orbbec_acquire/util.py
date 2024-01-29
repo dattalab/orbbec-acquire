@@ -233,7 +233,9 @@ def start_recording(
     MIN_DEPTH = 20  # 20mm
     MAX_DEPTH = 10000
 
-    filename_prefix = os.path.join(base_dir, "session_" + datetime.now().strftime("%Y%m%d%H%M%S"))
+    filename_prefix = os.path.join(
+        base_dir, "session_" + datetime.now().strftime("%Y%m%d%H%M%S")
+    )
     os.makedirs(filename_prefix, exist_ok=True)
 
     # write recording metadata
@@ -242,7 +244,9 @@ def start_recording(
     # start image writing process
     image_queue = Queue()
     write_process = Process(
-        target=write_images, args=(image_queue, filename_prefix), kwargs={"save_ir": save_ir}
+        target=write_images,
+        args=(image_queue, filename_prefix),
+        kwargs={"save_ir": save_ir},
     )
     write_process.start()
 
@@ -318,7 +322,9 @@ def start_recording(
             data_type = np.uint16
             image_dtype = cv2.CV_16UC1
             max_data = 65535
-            cv2.normalize(ir_data, ir_data, 0, max_data, cv2.NORM_MINMAX, dtype=image_dtype)
+            cv2.normalize(
+                ir_data, ir_data, 0, max_data, cv2.NORM_MINMAX, dtype=image_dtype
+            )
             ir_data = ir_data.astype(data_type)
 
             image_queue.put((ir_data, depth_data))
@@ -351,11 +357,17 @@ def start_recording(
         pipeline.stop()
         device_timestamps = np.array(device_timestamps)
 
-        np.savetxt(os.path.join(filename_prefix, "depth_ts.txt"), device_timestamps, fmt="%f")
+        np.savetxt(
+            os.path.join(filename_prefix, "depth_ts.txt"), device_timestamps, fmt="%f"
+        )
         print(
             " - Session Average Frame rate = ",
             str(
-                round(len(system_timestamps) / (max(system_timestamps) - min(system_timestamps)), 2)
+                round(
+                    len(system_timestamps)
+                    / (max(system_timestamps) - min(system_timestamps)),
+                    2,
+                )
             )
             + " fps",
         )
