@@ -25,7 +25,7 @@ setup(
     version=get_version("orbbec_acquire/__init__.py"),
     packages=find_packages(),
     platforms=["mac", "unix"],
-    install_requires=["click", "opencv-python", "numpy"],
+    install_requires=["click", "opencv-python", "numpy", "pybind11[global]"],
     python_requires=">=3.7",
     entry_points={"console_scripts": ["orbbec-acquire = orbbec_acquire.cli:record"]},
 )

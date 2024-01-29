@@ -42,9 +42,9 @@ def record(
 
     # prompt user to input session metadata
     if subject_name is None:
-        subject_name = input("Input subject name of the recording: ")
+        subject_name = input("Input subject name: ")
     if session_name is None:
-        session_name = input("Input session name of the recording: ")
+        session_name = input("Input session name: ")
 
     start_recording(
         base_dir=base_dir,
