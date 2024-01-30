@@ -11,13 +11,17 @@ To setup the acqusition apparatus please follow [the Kinect 2 depth camera setup
 ## Step 0: Install Ubuntu 22.04 on your acquisition machine
 You can follow the [installation instruction](https://ubuntu.com/server/docs/installation) to install Ubuntu 22.04 on your acquisition machine. If you are only using the machine for data acquisition, you can choose the minimal installation option.
 
+Note: we have also tested this using Ubuntu 18.04. However, you need to update `cmake` to > 3.15. You can install it via anaconda in a later step.
+
 ## Step 1: Install `git`
-```
+
+```bash
 sudo apt update
 sudo apt install git
 ```
 
 ## Step 2: Clone (download) the `orbbec-acquire` and `pyorbbecsdk` repositories
+
 `orbbec-acquire` (this repository) contains the CLI and utility functions that record data compatible with MoSeq pipeline. `pyorbbecsdk` is the camera software development kit that facilitates the data acquisition on the camera. You can learn more about it [here](https://github.com/orbbec/pyorbbecsdk).
 
 Clone `orbbec-acquire` repository from GitHub by running:
@@ -33,7 +37,7 @@ git clone https://github.com/orbbec/pyorbbecsdk.git
 Make sure these repositories are cloned into the same folder.
 
 ## Step 3: Install the necessary packages and libraries
-<!-- curl ffmpeg and conda -->
+
 Navigate to the `orbbec-acquire` directory by running:
 ```bash
 cd orbbec-acquire
@@ -43,31 +47,37 @@ Install the necessary packages by running the following script:
 bash ./scripts/installation_setup.sh
 ```
 
-## Step 4: Restart Terminal for the changes to be effective.
+## Step 4: Restart Terminal for the changes to be effective
 
-## Step 5: Create a new conda environment called `orbbec-acquire` and install `pybind11[global]`.
-Create a conda environment called `orbbec-acquire` with `python 3.11` by running:
-```
+
+## Step 5: Create a new conda environment called `orbbec-acquire`
+
+Create a conda environment called `orbbec-acquire` with `python 3.10` or `python 3.11` by running:
+
+```bash
 conda create -n orbbec-acquire python=3.11
 ```
+
 Activate the environment by running:
-```
+```bash
 conda activate orbbec-acquire
 ```
 
-## Step 6: Install `orbbec-acquire`.
+## Step 6: Install `orbbec-acquire`
 Navigate to the `orbbec-acquire` directory by running:
 ```bash
 cd orbbec-acquire
 ```
-Install this package by running:
+
+Install this package and necessary requirements by running:
 ```bash
 bash scripts/install_package.sh
 ```
 
 It will run `pip install` as well as copy a generated cmake file into the pyorbbecsdk folder.
 
-## Step 7: Install `pyorbbecsdk`.
+## Step 7: Install `pyorbbecsdk`
+
 Navigate to the `pyorbbecsdk` directory by running (assuming you are in the `orbbec-acquire` directory):
 ```bash
 cd ../pyorbbecsdk
@@ -81,7 +91,7 @@ bash ./install_pyorbbecsdk.sh
 
 ## Step 8: Restart the Terminal for the changes to be effective.
 
-Connect the camera to the acquisition computer. If the camera was previously connected, disconnect and re-connect the camera. Optionally preview with the viewer or navigate to `pyorbbecsdk/examples` directory and run the example scripts to test the camera.
+Connect the camera via USB-C to the acquisition computer. If the camera was previously connected, disconnect and re-connect the camera. Optionally preview with the viewer or navigate to `pyorbbecsdk/examples` directory and run the example scripts to test the camera.
 
 
 # Acquiring data
