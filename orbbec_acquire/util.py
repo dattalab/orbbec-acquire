@@ -1,14 +1,12 @@
 import os
-import sys
-import time
 import cv2
+import time
 import json
 import subprocess
-
 import numpy as np
 from datetime import datetime
 from multiprocessing import Process, Queue
-from pyorbbecsdk import *
+from pyorbbecsdk import Pipeline, Config, OBSensorType
 
 
 def display_images(display_queue: Queue):
@@ -18,8 +16,6 @@ def display_images(display_queue: Queue):
     Args:
         display_queue (multiprocessing.queues.Queque): the data stream from the camera to be displayed
     """
-    # image_dtype = cv2.CV_16UC1
-    # data_type = np.uint16
     max_data = 5500
     while True:
         data = display_queue.get()
@@ -28,14 +24,20 @@ def display_images(display_queue: Queue):
             cv2.destroyAllWindows()
             break
         else:
-            ir = data[0]
-            # cv2.normalize(ir, ir, 0, max_data, cv2.NORM_MINMAX, dtype=image_dtype)
+            ir, depth = data
             ir = np.clip(ir + 100, 160, max_data)
-            ir = np.clip(((np.log(ir) - 5) * 70), 0, None).astype(np.uint8)
+            ir = np.clip(((np.log(ir) - 5) * 70), 0, None)
+            try:
+                depth = np.median(depth[depth > 0]) - depth
+            except Exception:
+                depth = np.median(depth) - depth
+            depth = np.where((depth < 0) | (depth > 200), 0, depth)
 
-            cv2.imshow("ir", ir)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            ir = (ir / ir.max() * 255).astype(np.uint8)
+            depth = (depth / depth.max() * 255).astype(np.uint8)
+
+            cv2.imshow("ir", np.hstack((ir, depth)))
+            cv2.waitKey(1)
         # clear queue before next iteration
         while True:
             try:
@@ -280,9 +282,9 @@ def start_recording(
     # the actual recording
     try:
         while time.time() - start_time < recording_length:
-            frames = pipeline.wait_for_frames(100)
+            frames = pipeline.wait_for_frames(200)
             if frames is None:
-                # print("Dropped frame")
+                print("Dropped frame")
                 continue
 
             # record system timestamp
@@ -301,30 +303,21 @@ def start_recording(
             depth_data = np.frombuffer(depth_frame.get_data(), dtype=np.uint16)
             depth_data = depth_data.reshape((height, width))
             depth_data = (depth_data * scale).astype(np.uint16)
-            # depth_data = np.where(
-            #     (depth_data > MIN_DEPTH) & (depth_data < MAX_DEPTH), depth_data, 0
-            # )
 
             # get ir frames
             ir_frame = frames.get_ir_frame()
             if ir_frame is None:
                 continue
+
             ir_data = np.asanyarray(ir_frame.get_data())
             width = ir_frame.get_width()
             height = ir_frame.get_height()
             ir_data = np.frombuffer(ir_data, dtype=np.uint16)
-            ir_data = np.resize(ir_data, (height, width, 1))
-
-            # info about ir for rendering
-            # data_type = np.uint16
-            # image_dtype = cv2.CV_16UC1
-            # max_data = 65535
-            # cv2.normalize(ir_data, ir_data, 0, max_data, cv2.NORM_MINMAX, dtype=image_dtype)
-            # ir_data = ir_data.astype(data_type)
+            ir_data = np.resize(ir_data, (height, width))
 
             image_queue.put((ir_data, depth_data))
             if display_frames and count % 2 == 0:
-                display_queue.put((ir_data,))
+                display_queue.put((ir_data, depth_data))
 
             if count > 0:
                 if display_time and (count % PRINT_INTERVAL) == 0:
