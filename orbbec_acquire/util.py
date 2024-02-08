@@ -19,7 +19,6 @@ def display_images(display_queue: Queue, depth_height_threshold: int):
     max_data = 5500
     while True:
         data = display_queue.get()
-
         if len(data) == 0:
             cv2.destroyAllWindows()
             break
@@ -42,7 +41,7 @@ def display_images(display_queue: Queue, depth_height_threshold: int):
         while True:
             try:
                 display_queue.get_nowait()
-            except Exception:
+            except:
                 break
 
 
@@ -185,6 +184,7 @@ def write_metadata(
     subject_name,
     session_name,
     depth_resolution=[640, 576],
+    little_endian=True,
     color_resolution=[640, 576],
 ):
     """
@@ -195,6 +195,7 @@ def write_metadata(
         subject_name (str): subject name of the recording
         session_name (str): session name of the recording
         depth_resolution (list, optional): frame resolution of depth videos. Defaults to [640, 576].
+        little_endian (bool, optional): boolean flag that indicates if depth data is little endian. Defaults to True.
         color_resolution (list, optional): frame resolution of ir video. Defaults to [640, 576].
     """
 
@@ -203,6 +204,7 @@ def write_metadata(
         "SubjectName": subject_name,
         "SessionName": session_name,
         "DepthResolution": depth_resolution,
+        "IsLittleEndian": little_endian,
         "ColorResolution": color_resolution,
         "StartTime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
     }
@@ -236,7 +238,9 @@ def start_recording(
 
     PRINT_INTERVAL = 30  # print every 30 frames
 
-    filename_prefix = os.path.join(base_dir, "session_" + datetime.now().strftime("%Y%m%d%H%M%S"))
+    filename_prefix = os.path.join(
+        base_dir, "session_" + datetime.now().strftime("%Y%m%d%H%M%S")
+    )
     os.makedirs(filename_prefix, exist_ok=True)
 
     # write recording metadata
@@ -245,7 +249,9 @@ def start_recording(
     # start image writing process
     image_queue = Queue()
     write_process = Process(
-        target=write_images, args=(image_queue, filename_prefix), kwargs={"save_ir": save_ir}
+        target=write_images,
+        args=(image_queue, filename_prefix),
+        kwargs={"save_ir": save_ir},
     )
     write_process.start()
 
@@ -276,7 +282,7 @@ def start_recording(
     system_timestamps = []
     device_timestamps = []
     start_time = time.time()
-    print("Start time:", start_time)
+    print(start_time)
     count = 0
 
     # the actual recording
@@ -284,6 +290,7 @@ def start_recording(
         while time.time() - start_time < recording_length:
             frames = pipeline.wait_for_frames(200)
             if frames is None:
+                print("Dropped frame")
                 print("Dropped frame")
                 continue
 
@@ -320,10 +327,23 @@ def start_recording(
                 display_queue.put((ir_data, depth_data))
 
             if count > 0:
-                if display_time and (count % PRINT_INTERVAL) == 0:
-                    fps = len(system_timestamps) / (max(system_timestamps) - min(system_timestamps))
-                    print(f"\rRecorded {int(time.time() - start_time):02d} of {recording_length} seconds", end="")
-                    print(f" - Current frame rate {fps:0.2f} fps", end="")
+                if display_time and count % PRINT_INTERVAL:
+                    sys.stdout.write(
+                        "\rRecorded "
+                        + repr(int(time.time() - start_time))
+                        + " out of "
+                        + repr(recording_length)
+                        + " seconds "
+                        + "- Current Frame rate "
+                        + str(
+                            round(
+                                len(system_timestamps)
+                                / (max(system_timestamps) - min(system_timestamps)),
+                                2,
+                            )
+                        )
+                        + " fps"
+                    )
             count += 1
     except OSError:
         print("Recording stopped early")

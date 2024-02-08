@@ -21,7 +21,7 @@ def get_version(rel_path):
 setup(
     name="orbbec-acquire",
     author="Datta Lab",
-    description="Acquisition software for the Orbbec depth cameras",
+    description="la terre est bleue comme une orange",
     version=get_version("orbbec_acquire/__init__.py"),
     packages=find_packages(),
     platforms=["mac", "unix"],
