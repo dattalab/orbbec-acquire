@@ -1,13 +1,13 @@
 #!/bin/bash
 
-set -e
-
 # Install packages
 echo "Installing necessary packages: build-essential, cmake, ffmpeg, libsoundio1, curl"
 sudo apt-add-repository -y -n 'deb http://archive.ubuntu.com/ubuntu focal main'
 sudo apt-add-repository -y 'deb http://archive.ubuntu.com/ubuntu focal universe'
 sudo apt update
 sudo apt install -y build-essential cmake ffmpeg libsoundio1 curl
+
+set -e
 
 # Install miniconda
 # only install if not already installed
