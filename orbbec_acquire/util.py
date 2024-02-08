@@ -9,7 +9,7 @@ from multiprocessing import Process, Queue
 from pyorbbecsdk import Pipeline, Config, OBSensorType
 
 
-def display_images(display_queue: Queue):
+def display_images(display_queue: Queue, depth_height_threshold: int):
     """
     display captured images
 
@@ -31,12 +31,12 @@ def display_images(display_queue: Queue):
                 depth = np.median(depth[depth > 0]) - depth
             except Exception:
                 depth = np.median(depth) - depth
-            depth = np.where((depth < 0) | (depth > 200), 0, depth)
+            depth = np.where((depth < 0) | (depth > depth_height_threshold), 0, depth)
 
             ir = (ir / ir.max() * 255).astype(np.uint8)
             depth = (depth / depth.max() * 255).astype(np.uint8)
 
-            cv2.imshow("ir", np.hstack((ir, depth)))
+            cv2.imshow("Infrared + depth streams", np.hstack((ir, depth)))
             cv2.waitKey(1)
         # clear queue before next iteration
         while True:
@@ -162,7 +162,7 @@ def write_images(image_queue, filename_prefix, save_ir=True):
             ir, depth = data
             depth_pipe = write_frames(
                 os.path.join(filename_prefix, "depth.avi"),
-                depth.astype(np.uint16)[None, :, :],
+                depth[None, :, :],
                 codec="ffv1",
                 close_pipe=False,
                 pipe=depth_pipe,
@@ -171,7 +171,7 @@ def write_images(image_queue, filename_prefix, save_ir=True):
             if save_ir:
                 ir_pipe = write_frames(
                     os.path.join(filename_prefix, "ir.avi"),
-                    ir.astype(np.uint16)[None, :, :],
+                    ir[None, :, :],
                     close_pipe=False,
                     codec="ffv1",
                     pipe=ir_pipe,
@@ -210,7 +210,7 @@ def write_metadata(
     metadata_name = os.path.join(filename_prefix, "metadata.json")
 
     with open(metadata_name, "w") as output:
-        json.dump(metadata_dict, output)
+        json.dump(metadata_dict, output, indent=2)
 
 
 def start_recording(
@@ -221,6 +221,7 @@ def start_recording(
     save_ir=True,
     display_frames=True,
     display_time=True,
+    depth_height_threshold=200,
 ):
     """
     start recording data.
@@ -233,9 +234,7 @@ def start_recording(
         device_id (int, optional): camera id number if there are multiple cameras. Defaults to 0.
     """
 
-    PRINT_INTERVAL = 30
-    # MIN_DEPTH = 20  # 20mm
-    # MAX_DEPTH = 10000
+    PRINT_INTERVAL = 30  # print every 30 frames
 
     filename_prefix = os.path.join(base_dir, "session_" + datetime.now().strftime("%Y%m%d%H%M%S"))
     os.makedirs(filename_prefix, exist_ok=True)
@@ -252,7 +251,7 @@ def start_recording(
 
     if display_frames:
         display_queue = Queue()
-        display_process = Process(target=display_images, args=(display_queue,))
+        display_process = Process(target=display_images, args=(display_queue, depth_height_threshold))
         display_process.start()
 
     # define the camera
@@ -261,7 +260,8 @@ def start_recording(
     # set up depth stream
     profile_list = pipeline.get_stream_profile_list(OBSensorType.DEPTH_SENSOR)
     depth_profile = profile_list.get_default_video_stream_profile()
-    assert depth_profile is not None
+    if depth_profile is None:
+        raise ValueError("Depth stream unable to initialize. Make sure there is a USB connection to the camera.")
     config.enable_stream(depth_profile)
 
     # set up ir stream
@@ -333,6 +333,8 @@ def start_recording(
         device_timestamps = np.array(device_timestamps)
 
         np.savetxt(os.path.join(filename_prefix, "depth_ts.txt"), device_timestamps, fmt="%f")
+        np.savetxt(os.path.join(filename_prefix, "system_ts.txt"), np.array(system_timestamps), fmt="%f")
+
         fps = len(system_timestamps) / (max(system_timestamps) - min(system_timestamps))
         print(f" - Session average frame rate = {fps:0.2f} fps")
         image_queue.put(tuple())
