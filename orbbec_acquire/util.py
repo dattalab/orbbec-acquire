@@ -257,7 +257,9 @@ def start_recording(
 
     if display_frames:
         display_queue = Queue()
-        display_process = Process(target=display_images, args=(display_queue, depth_height_threshold))
+        display_process = Process(
+            target=display_images, args=(display_queue, depth_height_threshold)
+        )
         display_process.start()
 
     # define the camera
@@ -267,7 +269,9 @@ def start_recording(
     profile_list = pipeline.get_stream_profile_list(OBSensorType.DEPTH_SENSOR)
     depth_profile = profile_list.get_default_video_stream_profile()
     if depth_profile is None:
-        raise ValueError("Depth stream unable to initialize. Make sure there is a USB connection to the camera.")
+        raise ValueError(
+            "Depth stream unable to initialize. Make sure there is a USB connection to the camera."
+        )
     config.enable_stream(depth_profile)
 
     # set up ir stream
@@ -325,24 +329,15 @@ def start_recording(
             if display_frames and count % 2 == 0:
                 display_queue.put((ir_data, depth_data))
 
-            if count > 0:
-                if display_time and (count % PRINT_INTERVAL) == 0:
-                    sys.stdout.write(
-                        "\rRecorded "
-                        + repr(int(time.time() - start_time))
-                        + " out of "
-                        + repr(recording_length)
-                        + " seconds "
-                        + "- Current Frame rate "
-                        + str(
-                            round(
-                                len(system_timestamps)
-                                / (max(system_timestamps) - min(system_timestamps)),
-                                2,
-                            )
-                        )
-                        + " fps"
-                    )
+            if display_time and count > 0 and (count % PRINT_INTERVAL) == 0:
+                fps = len(system_timestamps) / (
+                    max(system_timestamps) - min(system_timestamps)
+                )
+                print(
+                    f"\rRecorded {int(time.time() - start_time):02d} of {recording_length} seconds",
+                    end="",
+                )
+                print(f" - Current frame rate {fps:0.2f} fps", end="")
             count += 1
     except OSError:
         print("Recording stopped early")
@@ -351,8 +346,14 @@ def start_recording(
         pipeline.stop()
         device_timestamps = np.array(device_timestamps)
 
-        np.savetxt(os.path.join(filename_prefix, "depth_ts.txt"), device_timestamps, fmt="%f")
-        np.savetxt(os.path.join(filename_prefix, "system_ts.txt"), np.array(system_timestamps), fmt="%f")
+        np.savetxt(
+            os.path.join(filename_prefix, "depth_ts.txt"), device_timestamps, fmt="%f"
+        )
+        np.savetxt(
+            os.path.join(filename_prefix, "system_ts.txt"),
+            np.array(system_timestamps),
+            fmt="%f",
+        )
 
         fps = len(system_timestamps) / (max(system_timestamps) - min(system_timestamps))
         print(f" - Session average frame rate = {fps:0.2f} fps")
