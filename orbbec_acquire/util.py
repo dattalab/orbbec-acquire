@@ -282,7 +282,7 @@ def start_recording(
     system_timestamps = []
     device_timestamps = []
     start_time = time.time()
-    print(start_time)
+    print("Start time:", datetime.fromtimestamp(start_time))
     count = 0
 
     # the actual recording
@@ -290,7 +290,6 @@ def start_recording(
         while time.time() - start_time < recording_length:
             frames = pipeline.wait_for_frames(200)
             if frames is None:
-                print("Dropped frame")
                 print("Dropped frame")
                 continue
 
@@ -327,7 +326,7 @@ def start_recording(
                 display_queue.put((ir_data, depth_data))
 
             if count > 0:
-                if display_time and count % PRINT_INTERVAL:
+                if display_time and (count % PRINT_INTERVAL) == 0:
                     sys.stdout.write(
                         "\rRecorded "
                         + repr(int(time.time() - start_time))
