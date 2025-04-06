@@ -27,6 +27,7 @@ click.core.Option.__init__ = new_init
 @click.option("--preview", default=True, type=bool, help="show frame preview during recording")
 @click.option("--display-time", default=True, type=bool, help="show time during the recording")
 @click.option("--depth-height-threshold", default=150, type=int, help="Set the max height value for visualization only")
+@click.option("--frame-rate", "-r", type=int, default=30, help="frame rate of the recording")
 def record(
     base_dir,
     subject_name,
@@ -36,6 +37,7 @@ def record(
     preview,
     display_time,
     depth_height_threshold,
+    frame_rate,
 ):
     # make base_dir if it doesn't exist
     os.makedirs(base_dir, exist_ok=True)
@@ -57,4 +59,5 @@ def record(
         display_frames=preview,
         display_time=display_time,
         depth_height_threshold=depth_height_threshold,
+        frame_rate=frame_rate,
     )

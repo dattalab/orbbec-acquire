@@ -6,7 +6,7 @@ import subprocess
 import numpy as np
 from datetime import datetime
 from multiprocessing import Process, Queue
-from pyorbbecsdk import Pipeline, Config, OBSensorType
+from pyorbbecsdk import Pipeline, Config, OBSensorType, OBFormat
 
 
 def display_images(display_queue: Queue, depth_height_threshold: int):
@@ -224,6 +224,7 @@ def start_recording(
     display_frames=True,
     display_time=True,
     depth_height_threshold=200,
+    frame_rate=30,
 ):
     """
     start recording data.
@@ -267,16 +268,20 @@ def start_recording(
     config = Config()
     # set up depth stream
     profile_list = pipeline.get_stream_profile_list(OBSensorType.DEPTH_SENSOR)
-    depth_profile = profile_list.get_default_video_stream_profile()
+    depth_profile = profile_list.get_video_stream_profile(
+        640, 0, OBFormat.Y16, frame_rate
+    )
     if depth_profile is None:
         raise ValueError(
-            "Depth stream unable to initialize. Make sure there is a USB connection to the camera."
+            "Depth stream unable to initialize. Make sure there is a USB connection to the camera or that the frame rate you selected is 5, 15, 25, or 30Hz."
         )
     config.enable_stream(depth_profile)
 
     # set up ir stream
     profile_list = pipeline.get_stream_profile_list(OBSensorType.IR_SENSOR)
-    ir_profile = profile_list.get_default_video_stream_profile()
+    ir_profile = profile_list.get_video_stream_profile(
+        640, 0, OBFormat.Y16, frame_rate
+    )
     config.enable_stream(ir_profile)
 
     # start the camera
